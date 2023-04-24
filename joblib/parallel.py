@@ -39,6 +39,9 @@ from ._parallel_backends import AutoBatchingMixin  # noqa
 from ._parallel_backends import ParallelBackendBase  # noqa
 
 
+IS_PYPY = hasattr(sys, "pypy_version_info")
+
+
 BACKENDS = {
     'threading': ThreadingBackend,
     'sequential': SequentialBackend,
@@ -1281,6 +1284,14 @@ class Parallel(Logger):
             # the rest of the function does not call `_terminate_and_reset`
             # in finally.
             if dispatch_thread_id != threading.get_ident():
+                if not IS_PYPY:
+                    warnings.warn(
+                        "joblib.Parallel has detected an uncommon execution "
+                        "environment. joblib maintainers would like to know more "
+                        "about your usecase, please report this warning at "
+                        "https://github.com/joblib/joblib/issues ."
+                    )
+
                 detach_generator_exit = True
                 _parallel = self
 
